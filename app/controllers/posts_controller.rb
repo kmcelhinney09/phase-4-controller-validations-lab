@@ -1,5 +1,7 @@
 class PostsController < ApplicationController
 
+rescue_from ActiveRecord::RecordInvalid, with: :render_unprocessable_enity_response
+
   def show
     post = Post.find(params[:id])
     
@@ -10,8 +12,11 @@ class PostsController < ApplicationController
     post = Post.find(params[:id])
 
     post.update(post_params)
-
-    render json: post
+    if post.valid?
+      render json: post
+    else
+      render json: { errors: post.errors }, status: :unprocessable_entity
+    end
   end
 
   private
@@ -19,5 +24,4 @@ class PostsController < ApplicationController
   def post_params
     params.permit(:category, :content, :title)
   end
-
 end
